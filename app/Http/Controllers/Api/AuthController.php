@@ -7,8 +7,7 @@ use App\Services\AuthService;
 use Illuminate\Http\Request;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\LoginRequest;
-
-
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
@@ -24,8 +23,17 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Usuário registrado com sucesso',
             'user' => $user,
-            'token' => $token
-        ], 201);
+        ], 201)->cookie(
+            'auth_token',
+            $token,
+            60 * 24 * 7,
+            '/',
+            null,
+            false,
+            true,
+            false,
+            'Lax'
+        );
     }
 
     public function login(LoginRequest $request)
@@ -39,18 +47,33 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Login bem-sucedido',
-            'token' => $token
-        ], 200);
+            ])->cookie(
+                'auth_token',
+                $token,
+                60 * 24 * 7,
+                '/',
+                null,
+                false,
+                true,
+                false,
+                'Lax'
+            );
     }
-
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $token = $request->cookie('auth_token');
+
+        if ($token) {
+            $accessToken = PersonalAccessToken::findToken($token);
+
+            if ($accessToken) {
+                $accessToken->delete();
+            }
+        }
 
         return response()->json([
-            'success' => true,
-            'message' => 'Logout realizado com sucesso'
-        ]);
+            'message' => 'Logout realizado'
+        ])->withoutCookie('auth_token');
     }
 
     public function redirectToSocialite()
@@ -64,13 +87,6 @@ class AuthController extends Controller
         $authService = new AuthService();
         $response = $authService->handleSocialiteCallback();
 
-        $redirect = redirect(env('APP_URL') . "/auth/callback?token={$response['token']}");
-
-        return response()->json([
-            'message' => 'Login com Google realizado com sucesso',
-            'user' => $response['user'],
-            'token' => $response['token'],
-            'redirect' => $redirect->getTargetUrl()
-        ], 200);
+        return redirect(env('APP_URL') . "/auth/callback?token={$response['token']}");
     }
 }

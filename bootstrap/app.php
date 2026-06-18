@@ -14,7 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
         api: __DIR__.'/../routes/api.php',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+        'cookie.auth' => \App\Http\Middleware\SanctumCookieAuth::class,
+    ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (Throwable $e, $request) {
@@ -38,7 +40,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 404);
             }
 
-            if (!$request->user() || !$request->user()->currentAccessToken()) {
+            if (!$request->user()->currentAccessToken()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Usuário não autenticado'
