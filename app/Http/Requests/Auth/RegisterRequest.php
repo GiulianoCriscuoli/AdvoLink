@@ -6,6 +6,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\Rule;
 
 
 class RegisterRequest extends FormRequest
@@ -26,7 +27,18 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'username' => [
+            'required',
+            'string',
+            'min:3',
+            'max:30',
+            'alpha_dash', // só letras, números, hífen e underscore
+            'unique:users,username',
+            Rule::notIn([
+                    'admin', 'api', 'login', 'register', 'dashboard',
+                    'settings', 'auth', 'logout', 'password', 'profile',
+                ]),
+            ],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ];
@@ -38,10 +50,14 @@ class RegisterRequest extends FormRequest
      * @return array<string, string>
      */
     public function messages(): array
-    {        return [
-            'name.required' => 'O campo de nome é obrigatório.',
-            'name.string' => 'O campo de nome deve ser uma string.',
-            'name.max' => 'O campo de nome não pode exceder 255 caracteres.',
+    {
+        return [
+            'username.required' => 'O campo de nome de usuário é obrigatório.',
+            'username.string' => 'O campo de nome de usuário deve ser uma string.',
+            'username.min' => 'O campo de nome de usuário deve ter pelo menos 3 caracteres.',
+            'username.max' => 'O campo de nome de usuário não pode exceder 30 caracteres.',
+            'username.alpha_dash' => 'O campo de nome de usuário deve conter apenas letras, números, hífen e underscore.',
+            'username.unique' => 'O nome de usuário já está em uso.',
             'email.required' => 'O campo de email é obrigatório.',
             'email.string' => 'O campo de email deve ser uma string.',
             'email.email' => 'O campo de email deve ser um endereço de email válido.',

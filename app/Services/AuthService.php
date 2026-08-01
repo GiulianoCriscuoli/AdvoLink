@@ -11,24 +11,24 @@ use Throwable;
 
 class AuthService
 {
+    public function __construct(
+        private UserRepository $userRepository
+    ) {}
+
     public function register(array $data): User
     {
-        $repositoryUser = new UserRepository(new User());
-
-        if($this->findByEmail($data['email'])) {
+        if ($this->findByEmail($data['email'])) {
             throw new Exception('Email já registrado');
         }
 
         $data['password'] = Hash::make($data['password']);
-        $user = $repositoryUser->create($data);
 
-        return $user;
+        return $this->userRepository->create($data);
     }
 
     public function login(array $data): User
     {
-        $user = new UserRepository(new User());
-        $user = $user->findByEmail($data['email']);
+        $user = $this->userRepository->findByEmail($data['email']);
 
         if (!$user || !Hash::check($data['password'], $user->password)) {
             throw new Exception('Credenciais inválidas ou login não encontrado! Tente novamente.');
@@ -39,8 +39,7 @@ class AuthService
 
     protected function findByEmail(string $email): ?User
     {
-        $user = new UserRepository(new User());
-        return $user->findByEmail($email);
+        return $this->userRepository->findByEmail($email);
     }
 
     public function generateToken(User $user): string
@@ -73,9 +72,7 @@ class AuthService
             'avatar' => $googleUser->getAvatar(),
         ];
 
-        $user = new UserRepository(new User());
-        $user = $user->updateOrCreate(['email' => $data['email']], $data);
-
+        $user = $this->userRepository->updateOrCreate(['email' => $data['email']], $data);
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return [

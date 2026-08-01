@@ -11,14 +11,17 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
+
+    public function __construct(
+        private AuthService $authService
+    ) {}
+
     public function register(RegisterRequest $request)
     {
         $data = $request->validated();
 
-        $authService = new AuthService();
-
-        $user  = $authService->register($data);
-        $token = $authService->generateToken($user);
+        $user  = $this->authService->register($data);
+        $token = $this->authService->generateToken($user);
 
         return response()->json([
             'message' => 'Usuário registrado com sucesso',
@@ -40,24 +43,23 @@ class AuthController extends Controller
     {
         $data = $request->validated();
 
-        $authService = new AuthService();
-
-        $user = $authService->login($data);
-        $token = $authService->generateToken($user);
+        $user = $this->authService->login($data);
+        $token = $this->authService->generateToken($user);
 
         return response()->json([
             'message' => 'Login bem-sucedido',
-            ])->cookie(
-                'auth_token',
-                $token,
-                60 * 24 * 7,
-                '/',
-                null,
-                false,
-                true,
-                false,
-                'Lax'
-            );
+            'user' => $user,
+        ])->cookie(
+            'auth_token',
+            $token,
+            60 * 24 * 7,
+            '/',
+            null,
+            false,
+            true,
+            false,
+            'Lax'
+        );
     }
     public function logout(Request $request)
     {
@@ -78,14 +80,12 @@ class AuthController extends Controller
 
     public function redirectToSocialite()
     {
-        $authService = new AuthService();
-        return $authService->redirectToSocialite();
+        return $this->authService->redirectToSocialite();
     }
 
     public function handleSocialiteCallback()
     {
-        $authService = new AuthService();
-        $response = $authService->handleSocialiteCallback();
+        $response = $this->authService->handleSocialiteCallback();
 
         return redirect(env('APP_URL') . "/auth/callback?token={$response['token']}");
     }
