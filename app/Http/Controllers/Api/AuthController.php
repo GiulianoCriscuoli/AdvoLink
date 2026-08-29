@@ -87,6 +87,6 @@ class AuthController extends Controller
     {
         $response = $this->authService->handleSocialiteCallback();
 
-        return redirect(env('FRONTEND_URL') . "/auth/callback?token={$response['token']}");
+        return redirect(config('app.frontend_url') . "/auth/callback?token={$response['token']}");
     }
 }
