@@ -56,6 +56,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Frontend URL
+    |--------------------------------------------------------------------------
+    |
+    | The base URL of the frontend application. Used, for example, to build
+    | redirect URLs after a successful OAuth login callback.
+    |
+    */
+
+    'frontend_url' => env('FRONTEND_URL', 'http://localhost'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |
