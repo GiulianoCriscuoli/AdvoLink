@@ -12,10 +12,15 @@ use App\Enums\Role;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['username', 'email', 'password', 'google_id', 'avatar'])]
+#[Fillable(['name', 'username', 'email', 'password', 'google_id', 'avatar'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
+    public const RESERVED_USERNAMES = [
+        'admin', 'api', 'login', 'register', 'dashboard',
+        'settings', 'auth', 'logout', 'password', 'profile',
+    ];
+
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, HasApiTokens;
 

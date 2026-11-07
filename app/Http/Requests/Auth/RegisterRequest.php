@@ -7,6 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
+use App\Models\User;
 
 
 class RegisterRequest extends FormRequest
@@ -34,10 +35,7 @@ class RegisterRequest extends FormRequest
             'max:30',
             'alpha_dash', // só letras, números, hífen e underscore
             'unique:users,username',
-            Rule::notIn([
-                    'admin', 'api', 'login', 'register', 'dashboard',
-                    'settings', 'auth', 'logout', 'password', 'profile',
-                ]),
+            Rule::notIn(User::RESERVED_USERNAMES),
             ],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
