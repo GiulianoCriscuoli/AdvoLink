@@ -7,7 +7,6 @@ use App\Services\AuthService;
 use Illuminate\Http\Request;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\LoginRequest;
-use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
@@ -63,15 +62,7 @@ class AuthController extends Controller
     }
     public function logout(Request $request)
     {
-        $token = $request->cookie('auth_token');
-
-        if ($token) {
-            $accessToken = PersonalAccessToken::findToken($token);
-
-            if ($accessToken) {
-                $accessToken->delete();
-            }
-        }
+        $request->user()->currentAccessToken()->delete();
 
         return response()->json([
             'message' => 'Logout realizado'

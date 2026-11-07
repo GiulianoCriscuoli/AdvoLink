@@ -4,7 +4,10 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -14,13 +17,13 @@ return Application::configure(basePath: dirname(__DIR__))
         api: __DIR__.'/../routes/api.php',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->alias([
-        'cookie.auth' => \App\Http\Middleware\SanctumCookieAuth::class,
-    ]);
+        $middleware->api(prepend: [
+            \App\Http\Middleware\SanctumCookieAuth::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (Throwable $e, $request) {
-            if (! $request->is('api/*')) {
+            if (!$request->is('api/*')) {
                 return null;
             }
 
@@ -28,23 +31,35 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json([
                     'success' => false,
                     'message' => 'Erro de validação',
-
                     'errors'  => $e->errors(),
                 ], 422);
             }
 
-            if ($e instanceof ModelNotFoundException) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Recurso não encontrado',
-                ], 404);
+            if ($e instanceof HttpResponseException) {
+                return $e->getResponse();
             }
 
-            if (!$request->user()->currentAccessToken()) {
+            if ($e instanceof AuthenticationException) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Usuário não autenticado'
+                    'message' => 'Não autenticado',
                 ], 401);
+            }
+
+            if ($e instanceof HttpExceptionInterface) {
+                $status = $e->getStatusCode();
+
+                $message = match ($status) {
+                    404 => 'Recurso não encontrado',
+                    405 => 'Método não permitido',
+                    429 => 'Muitas tentativas. Tente novamente mais tarde.',
+                    default => $e->getMessage() ?: Response::$statusTexts[$status] ?? 'Erro',
+                };
+
+                return response()->json([
+                    'success' => false,
+                    'message' => $message,
+                ], $status, $e->getHeaders());
             }
 
             return response()->json([

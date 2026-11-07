@@ -5,8 +5,8 @@ namespace App\Services;
 use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use Illuminate\Validation\ValidationException;
 use Laravel\Socialite\Facades\Socialite;
-use Exception;
 use Throwable;
 
 class AuthService
@@ -18,7 +18,9 @@ class AuthService
     public function register(array $data): User
     {
         if ($this->findByEmail($data['email'])) {
-            throw new Exception('Email já registrado');
+            throw ValidationException::withMessages([
+                'email' => 'O email já está em uso.',
+            ]);
         }
 
         $data['password'] = Hash::make($data['password']);
@@ -31,7 +33,7 @@ class AuthService
         $user = $this->userRepository->findByEmail($data['email']);
 
         if (!$user || !Hash::check($data['password'], $user->password)) {
-            throw new Exception('Credenciais inválidas ou login não encontrado! Tente novamente.');
+            abort(401, 'Credenciais inválidas ou login não encontrado! Tente novamente.');
         }
 
         return $user;
@@ -57,12 +59,12 @@ class AuthService
         try {
             $googleUser = Socialite::driver('google')->stateless()->user();
         } catch (Throwable $e) {
-            throw new Exception('Erro no login com Google');
+            abort(401, 'Erro no login com Google');
         }
 
         if (!$googleUser->getEmail() ||
             !($googleUser->user['email_verified'] ?? false)) {
-            throw new Exception('O Google não forneceu um email válido ou o email não foi verificado.');
+            abort(401, 'O Google não forneceu um email válido ou o email não foi verificado.');
         }
 
         $data = [

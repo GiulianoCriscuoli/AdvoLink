@@ -36,10 +36,13 @@ abstract class RepositoryBase
         return null;
     }
 
-    public function updateOrCreate(array $data)
+    public function updateOrCreate(array $attributes, array $data)
     {
+
+        $attributes = $data['email'];
+
         return $this->model::updateOrCreate(
-            ['email' => $data['email']],
+            $attributes,
             $data
         );
     }
