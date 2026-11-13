@@ -2,13 +2,10 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
-use App\Models\User;
-
 
 class RegisterRequest extends FormRequest
 {
@@ -29,13 +26,13 @@ class RegisterRequest extends FormRequest
     {
         return [
             'username' => [
-            'required',
-            'string',
-            'min:3',
-            'max:30',
-            'alpha_dash', // só letras, números, hífen e underscore
-            'unique:users,username',
-            Rule::notIn(User::RESERVED_USERNAMES),
+                'required',
+                'string',
+                'min:3',
+                'max:30',
+                'alpha_dash', // só letras, números, hífen e underscore
+                'unique:users,username',
+                Rule::notIn(User::RESERVED_USERNAMES),
             ],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
@@ -66,17 +63,5 @@ class RegisterRequest extends FormRequest
             'password.min' => 'O campo de senha deve ter pelo menos 8 caracteres.',
             'password.confirmed' => 'A confirmação de senha não corresponde.',
         ];
-    }
-
-    protected function failedValidation(Validator $validator)
-
-    {
-        throw new HttpResponseException(
-            response()->json([
-                'status' => false,
-                'message' => 'Erro de validação',
-                'errors' => $validator->errors()
-            ], 422)
-        );
     }
 }

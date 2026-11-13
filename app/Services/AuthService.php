@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use App\Models\User;
 use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
 use Illuminate\Validation\ValidationException;
 use Laravel\Socialite\Facades\Socialite;
 use Throwable;
@@ -32,7 +32,7 @@ class AuthService
     {
         $user = $this->userRepository->findByEmail($data['email']);
 
-        if (!$user || !Hash::check($data['password'], $user->password)) {
+        if (! $user || ! Hash::check($data['password'], $user->password)) {
             abort(401, 'Credenciais inválidas ou login não encontrado! Tente novamente.');
         }
 
@@ -62,8 +62,8 @@ class AuthService
             abort(401, 'Erro no login com Google');
         }
 
-        if (!$googleUser->getEmail() ||
-            !($googleUser->user['email_verified'] ?? false)) {
+        if (! $googleUser->getEmail() ||
+            ! ($googleUser->user['email_verified'] ?? false)) {
             abort(401, 'O Google não forneceu um email válido ou o email não foi verificado.');
         }
 
@@ -79,7 +79,7 @@ class AuthService
 
         return [
             'user' => $user,
-            'token' => $token
+            'token' => $token,
         ];
     }
 }

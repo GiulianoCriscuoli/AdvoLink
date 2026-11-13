@@ -17,7 +17,6 @@ class UserController extends Controller
     {
         return response()->json([
             'user' => $request->user(),
-            // Usuário vindo do Google ainda não escolheu o username
             'needs_username' => $request->user()->username === null,
         ]);
     }

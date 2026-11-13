@@ -12,6 +12,4 @@ class Plan extends Model
 {
     /** @use HasFactory<PlanFactory> */
     use HasFactory;
-
-
 }

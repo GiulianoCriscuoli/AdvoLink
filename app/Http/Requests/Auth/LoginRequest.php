@@ -3,8 +3,6 @@
 namespace App\Http\Requests\Auth;
 
 use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Foundation\Http\FormRequest;
 
 class LoginRequest extends FormRequest
@@ -30,12 +28,11 @@ class LoginRequest extends FormRequest
         ];
     }
 
-        /**
-        * Get the error messages for the defined validation rules.
-        *
-        * @return array<string, string>
-        */
-
+    /**
+     * Get the error messages for the defined validation rules.
+     *
+     * @return array<string, string>
+     */
     public function messages(): array
     {
         return [
@@ -45,17 +42,5 @@ class LoginRequest extends FormRequest
             'password.required' => 'O campo de senha é obrigatório.',
             'password.string' => 'O campo de senha deve ser uma string.',
         ];
-    }
-
-    protected function failedValidation(Validator $validator)
-
-    {
-        throw new HttpResponseException(
-            response()->json([
-                'status' => false,
-                'message' => 'Erro de validação',
-                'errors' => $validator->errors()
-            ], 422)
-        );
     }
 }

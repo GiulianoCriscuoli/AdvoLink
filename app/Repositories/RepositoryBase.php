@@ -31,8 +31,10 @@ abstract class RepositoryBase
         $record = $this->find($id);
         if ($record) {
             $record->update($data);
+
             return $record;
         }
+
         return null;
     }
 
@@ -50,6 +52,7 @@ abstract class RepositoryBase
         if ($record) {
             return $record->delete();
         }
+
         return false;
     }
 }

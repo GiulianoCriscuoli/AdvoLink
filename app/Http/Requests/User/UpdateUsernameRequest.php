@@ -4,9 +4,7 @@ namespace App\Http\Requests\User;
 
 use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 
 class UpdateUsernameRequest extends FormRequest
@@ -55,16 +53,5 @@ class UpdateUsernameRequest extends FormRequest
             'username.unique' => 'O nome de usuário já está em uso.',
             'username.not_in' => 'Este nome de usuário não está disponível.',
         ];
-    }
-
-    protected function failedValidation(Validator $validator)
-    {
-        throw new HttpResponseException(
-            response()->json([
-                'status' => false,
-                'message' => 'Erro de validação',
-                'errors' => $validator->errors()
-            ], 422)
-        );
     }
 }

@@ -3,14 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Services\AuthService;
 use Illuminate\Http\Request;
-use App\Http\Requests\Auth\RegisterRequest;
-use App\Http\Requests\Auth\LoginRequest;
 
 class AuthController extends Controller
 {
-
     public function __construct(
         private AuthService $authService
     ) {}
@@ -19,7 +18,7 @@ class AuthController extends Controller
     {
         $data = $request->validated();
 
-        $user  = $this->authService->register($data);
+        $user = $this->authService->register($data);
         $token = $this->authService->generateToken($user);
 
         return response()->json([
@@ -60,12 +59,13 @@ class AuthController extends Controller
             'Lax'
         );
     }
+
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
 
         return response()->json([
-            'message' => 'Logout realizado'
+            'message' => 'Logout realizado',
         ])->withoutCookie('auth_token');
     }
 
@@ -78,6 +78,7 @@ class AuthController extends Controller
     {
         $response = $this->authService->handleSocialiteCallback();
 
-        return redirect(config('app.frontend_url') . "/auth/callback?token={$response['token']}");
+        return redirect(config('app.frontend_url').'/auth/callback')
+            ->cookie('auth_token', $response['token'], 60 * 24 * 7, '/', null, false, true, false, 'Lax');
     }
 }
